@@ -97,7 +97,7 @@ function LineChart({ data, view, color }) {
   const linePoints = data.map((d, i) => `${sx(i)},${sy(d[view])}`).join(' ')
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '160px', overflow: 'visible' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ overflow: 'visible' }}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
