@@ -18,7 +18,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 import bcrypt
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "expense_splitter")
