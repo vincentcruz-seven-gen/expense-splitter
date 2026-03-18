@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [newGroup, setNewGroup] = useState({ name: '', description: '', default_currency: 'USD' })
+  const [newGroup, setNewGroup] = useState({ name: '', description: '', default_currency: 'PHP' })
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,7 +26,7 @@ export default function DashboardPage() {
       const g = await api.post('/groups', newGroup)
       setGroups([g, ...groups])
       setShowCreate(false)
-      setNewGroup({ name: '', description: '', default_currency: 'USD' })
+      setNewGroup({ name: '', description: '', default_currency: 'PHP' })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     }
   }
 
-  const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD']
+  const currencies = ['PHP', 'USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'SGD']
 
   return (
     <div className="min-h-screen bg-slate-50">
