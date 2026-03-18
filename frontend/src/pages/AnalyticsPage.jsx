@@ -80,7 +80,7 @@ function LineChart({ data, view, color }) {
     return <div className="h-40 flex items-center justify-center text-slate-300 text-sm">No data yet</div>
   }
 
-  const W = 280, H = 116, PL = 4, PR = 4, PT = 20, PB = 24
+  const W = 280, H = 116, PL = 20, PR = 20, PT = 20, PB = 24
   const cW = W - PL - PR, cH = H - PT - PB
   const sx = (i) => PL + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2)
   const sy = (v) => PT + cH - (v / max) * cH
