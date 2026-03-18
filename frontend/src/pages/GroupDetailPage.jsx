@@ -358,11 +358,12 @@ export default function GroupDetailPage() {
           <div className="space-y-3">
             {nonSettlements.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-200 p-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm font-medium text-slate-700">Spending</p>
-                    <p className="text-xs text-slate-400">{formatMoney(spendingData.at(-1).total, cur)} {spendingView === 'weekly' ? 'this week' : 'this month'}</p>
-                    <p className="text-xs text-red-400">debug: {nonSettlements[0] ? `td=${nonSettlements[0].transaction_date} ca=${nonSettlements[0].created_at} → ${getExpenseDate(nonSettlements[0])}` : 'no expenses'}</p>
+                    <p className="text-sm font-semibold text-slate-700">Spending</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {formatMoney(spendingData.at(-1).total, cur)} {spendingView === 'weekly' ? 'this week' : 'this month'}
+                    </p>
                   </div>
                   <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
                     {['weekly', 'monthly'].map((v) => (
@@ -373,21 +374,29 @@ export default function GroupDetailPage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex items-end gap-1.5 h-16">
-                  {spendingData.map((d, i) => (
-                    <div key={i} className="flex-1 flex items-end justify-center">
-                      <div
-                        className={`w-full rounded-t-sm transition-all ${d.current ? 'bg-indigo-500' : 'bg-indigo-200'}`}
-                        style={{ height: `${Math.max((d.total / spendingMax) * 56, d.total > 0 ? 3 : 0)}px` }}
-                        title={formatMoney(d.total, cur)}
-                      />
-                    </div>
-                  ))}
+                <div className="flex items-end gap-2" style={{ height: '120px' }}>
+                  {spendingData.map((d, i) => {
+                    const barH = spendingMax > 0 ? Math.max((d.total / spendingMax) * 96, d.total > 0 ? 6 : 0) : 0
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1" style={{ height: '100%' }}>
+                        {d.total > 0 && (
+                          <p className="text-center font-medium text-slate-700 leading-tight" style={{ fontSize: '9px' }}>
+                            {formatMoney(d.total, cur)}
+                          </p>
+                        )}
+                        <div
+                          className={`w-full rounded-t-md transition-all duration-300 ${d.current ? 'bg-indigo-500' : 'bg-indigo-300'}`}
+                          style={{ height: `${barH}px`, minHeight: d.total > 0 ? '6px' : '0' }}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
-                <div className="flex gap-1.5 mt-1">
+                <div className="flex gap-2 mt-2 border-t border-slate-100 pt-2">
                   {spendingData.map((d, i) => (
-                    <div key={i} className="flex-1 text-center">
-                      <p className="text-slate-400 truncate" style={{ fontSize: '9px' }}>{d.label}</p>
+                    <div key={i} className={`flex-1 text-center ${d.current ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}
+                      style={{ fontSize: '9px' }}>
+                      {d.label}
                     </div>
                   ))}
                 </div>
