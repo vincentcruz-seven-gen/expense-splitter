@@ -362,6 +362,7 @@ export default function GroupDetailPage() {
                   <div>
                     <p className="text-sm font-medium text-slate-700">Spending</p>
                     <p className="text-xs text-slate-400">{formatMoney(spendingData.at(-1).total, cur)} {spendingView === 'weekly' ? 'this week' : 'this month'}</p>
+                    <p className="text-xs text-red-400">debug: {nonSettlements[0] ? `td=${nonSettlements[0].transaction_date} ca=${nonSettlements[0].created_at} → ${getExpenseDate(nonSettlements[0])}` : 'no expenses'}</p>
                   </div>
                   <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
                     {['weekly', 'monthly'].map((v) => (
