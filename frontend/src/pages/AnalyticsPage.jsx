@@ -80,7 +80,7 @@ function LineChart({ data, view, color }) {
     return <div className="h-40 flex items-center justify-center text-slate-300 text-sm">No data yet</div>
   }
 
-  const W = 280, H = 100, PL = 4, PR = 4, PT = 20, PB = 4
+  const W = 280, H = 116, PL = 4, PR = 4, PT = 20, PB = 24
   const cW = W - PL - PR, cH = H - PT - PB
   const sx = (i) => PL + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2)
   const sy = (v) => PT + cH - (v / max) * cH
@@ -97,41 +97,39 @@ function LineChart({ data, view, color }) {
   const linePoints = data.map((d, i) => `${sx(i)},${sy(d[view])}`).join(' ')
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '150px', overflow: 'visible' }}>
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-        <path d={areaPath} fill={`url(#${gradId})`} />
-        <polyline points={linePoints} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        {data.map((d, i) => (
-          <g key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
-            <circle cx={sx(i)} cy={sy(d[view])} r="12" fill="transparent" />
-            <circle cx={sx(i)} cy={sy(d[view])} r={hovered === i ? 5 : 3} fill={hovered === i ? color : 'white'} stroke={color} strokeWidth="2" />
-            {hovered === i && (
-              <g>
-                <rect x={sx(i) > W * 0.7 ? sx(i) - 72 : sx(i) - 4} y={sy(d[view]) - 28} width="72" height="20" rx="4" fill="#1e293b" />
-                <text x={sx(i) > W * 0.7 ? sx(i) - 36 : sx(i) + 32} y={sy(d[view]) - 14} textAnchor="middle" fill="white" fontSize="10">
-                  {formatMoney(d[view], 'PHP')}
-                </text>
-              </g>
-            )}
-          </g>
-        ))}
-      </svg>
-      <div className="flex mt-1">
-        {data.map((d, i) => (
-          <div key={i} className="flex-1 text-center">
-            <span className={`block truncate ${hovered === i ? 'text-slate-700 font-medium' : 'text-slate-400'}`} style={{ fontSize: '9px' }}>
-              {d.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '160px', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill={`url(#${gradId})`} />
+      <polyline points={linePoints} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {data.map((d, i) => (
+        <g key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
+          <circle cx={sx(i)} cy={sy(d[view])} r="12" fill="transparent" />
+          <circle cx={sx(i)} cy={sy(d[view])} r={hovered === i ? 5 : 3} fill={hovered === i ? color : 'white'} stroke={color} strokeWidth="2" />
+          {hovered === i && (
+            <g>
+              <rect x={sx(i) > W * 0.7 ? sx(i) - 72 : sx(i) - 4} y={sy(d[view]) - 28} width="72" height="20" rx="4" fill="#1e293b" />
+              <text x={sx(i) > W * 0.7 ? sx(i) - 36 : sx(i) + 32} y={sy(d[view]) - 14} textAnchor="middle" fill="white" fontSize="10">
+                {formatMoney(d[view], 'PHP')}
+              </text>
+            </g>
+          )}
+          <text
+            x={sx(i)} y={H - 4}
+            textAnchor="middle"
+            fill={hovered === i ? '#374151' : '#94a3b8'}
+            fontSize="8"
+            fontWeight={hovered === i ? '600' : '400'}
+          >
+            {d.label}
+          </text>
+        </g>
+      ))}
+    </svg>
   )
 }
 
