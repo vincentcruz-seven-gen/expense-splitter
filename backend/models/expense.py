@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, Literal
 
 
@@ -26,6 +26,7 @@ class ExpenseCreate(BaseModel):
     tip_rate: float = 0.0
     round_to_peso: bool = False
     discounts: Optional[list[DiscountEntry]] = None
+    transaction_date: Optional[date] = None
 
 
 def expense_public(doc: dict) -> dict:
@@ -57,5 +58,6 @@ def expense_public(doc: dict) -> dict:
         "tip_rate": doc.get("tip_rate", 0.0),
         "round_to_peso": doc.get("round_to_peso", False),
         "is_settlement": doc.get("is_settlement", False),
+        "transaction_date": doc.get("transaction_date"),
         "created_at": doc.get("created_at", datetime.utcnow()),
     }

@@ -179,6 +179,21 @@ export default function GroupDetailPage() {
 
   const cur = group.default_currency || 'PHP'
 
+  const now = new Date()
+  const daysToMonday = now.getDay() === 0 ? 6 : now.getDay() - 1
+  const startOfWeek = new Date(now)
+  startOfWeek.setDate(now.getDate() - daysToMonday)
+  startOfWeek.setHours(0, 0, 0, 0)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const nonSettlements = expenses.filter((e) => !e.is_settlement)
+  const weekTotal = nonSettlements
+    .filter((e) => new Date(e.transaction_date || e.created_at) >= startOfWeek)
+    .reduce((sum, e) => sum + e.amount, 0)
+  const monthTotal = nonSettlements
+    .filter((e) => new Date(e.transaction_date || e.created_at) >= startOfMonth)
+    .reduce((sum, e) => sum + e.amount, 0)
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -302,6 +317,18 @@ export default function GroupDetailPage() {
         {/* Expenses tab */}
         {tab === 'expenses' && (
           <div className="space-y-3">
+            {nonSettlements.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <p className="text-xs text-slate-400 font-medium">This week</p>
+                  <p className="text-lg font-bold text-slate-800 mt-0.5">{formatMoney(weekTotal, cur)}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <p className="text-xs text-slate-400 font-medium">This month</p>
+                  <p className="text-lg font-bold text-slate-800 mt-0.5">{formatMoney(monthTotal, cur)}</p>
+                </div>
+              </div>
+            )}
             {expenses.length === 0 ? (
               <div className="text-center py-16 text-slate-400">
                 <Receipt size={32} className="mx-auto mb-2 opacity-40" />
@@ -335,6 +362,9 @@ export default function GroupDetailPage() {
                           )}
                           {mySplit && (
                             <span className="ml-2 text-indigo-600">· your share: {formatMoney(mySplit.share, exp.currency)}</span>
+                          )}
+                          {exp.transaction_date && (
+                            <span className="ml-2">· {new Date(exp.transaction_date + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: new Date(exp.transaction_date).getFullYear() !== now.getFullYear() ? 'numeric' : undefined })}</span>
                           )}
                         </p>
                       </div>

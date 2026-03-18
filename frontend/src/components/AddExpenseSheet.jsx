@@ -22,6 +22,7 @@ export default function AddExpenseSheet({ group, onClose, onAdded }) {
     amount: '',
     currency: group.default_currency || 'PHP',
     split_type: 'equal',
+    date: new Date().toISOString().split('T')[0],
   })
 
   // Payers (multi-payer support)
@@ -134,6 +135,7 @@ export default function AddExpenseSheet({ group, onClose, onAdded }) {
         tax_rate: taxRate / 100,
         tip_rate: tipRate / 100,
         round_to_peso: roundToPeso,
+        transaction_date: form.date,
       }
       if (payerList) payload.payers = payerList
       if (discountList.length > 0) payload.discounts = discountList
@@ -179,6 +181,19 @@ export default function AddExpenseSheet({ group, onClose, onAdded }) {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Dinner, groceries, taxi…"
+              required
+            />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              max={new Date().toISOString().split('T')[0]}
+              className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
           </div>
