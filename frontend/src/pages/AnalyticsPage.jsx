@@ -71,28 +71,102 @@ function BarChart({ data, view, color }) {
   )
 }
 
+function LineChart({ data, view, color }) {
+  const [hovered, setHovered] = useState(null)
+  const values = data.map((d) => d[view])
+  const max = Math.max(...values, 1)
+
+  if (data.length === 0) {
+    return <div className="h-40 flex items-center justify-center text-slate-300 text-sm">No data yet</div>
+  }
+
+  const W = 280, H = 100, PL = 4, PR = 4, PT = 20, PB = 4
+  const cW = W - PL - PR, cH = H - PT - PB
+  const sx = (i) => PL + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2)
+  const sy = (v) => PT + cH - (v / max) * cH
+  const bottom = PT + cH
+  const gradId = `lg${color.replace('#', '')}`
+
+  const areaPath = [
+    `M ${sx(0)} ${bottom}`,
+    ...data.map((d, i) => `L ${sx(i)} ${sy(d[view])}`),
+    `L ${sx(data.length - 1)} ${bottom}`,
+    'Z',
+  ].join(' ')
+
+  const linePoints = data.map((d, i) => `${sx(i)},${sy(d[view])}`).join(' ')
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '150px', overflow: 'visible' }}>
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill={`url(#${gradId})`} />
+        <polyline points={linePoints} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        {data.map((d, i) => (
+          <g key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
+            <circle cx={sx(i)} cy={sy(d[view])} r="12" fill="transparent" />
+            <circle cx={sx(i)} cy={sy(d[view])} r={hovered === i ? 5 : 3} fill={hovered === i ? color : 'white'} stroke={color} strokeWidth="2" />
+            {hovered === i && (
+              <g>
+                <rect x={sx(i) > W * 0.7 ? sx(i) - 72 : sx(i) - 4} y={sy(d[view]) - 28} width="72" height="20" rx="4" fill="#1e293b" />
+                <text x={sx(i) > W * 0.7 ? sx(i) - 36 : sx(i) + 32} y={sy(d[view]) - 14} textAnchor="middle" fill="white" fontSize="10">
+                  {formatMoney(d[view], 'PHP')}
+                </text>
+              </g>
+            )}
+          </g>
+        ))}
+      </svg>
+      <div className="flex mt-1">
+        {data.map((d, i) => (
+          <div key={i} className="flex-1 text-center">
+            <span className={`block truncate ${hovered === i ? 'text-slate-700 font-medium' : 'text-slate-400'}`} style={{ fontSize: '9px' }}>
+              {d.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ChartCard({ title, data, defaultView, colors }) {
   const [view, setView] = useState(defaultView)
+  const [chartType, setChartType] = useState('line')
+  const color = view === 'total' ? colors[0] : colors[1]
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-800">{title}</h3>
-        <div className="flex bg-slate-100 rounded-lg p-0.5 text-xs gap-0.5">
-          <button
-            onClick={() => setView('total')}
-            className={`px-3 py-1 rounded-md font-medium transition-colors ${view === 'total' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
-          >
-            Group total
-          </button>
-          <button
-            onClick={() => setView('my_share')}
-            className={`px-3 py-1 rounded-md font-medium transition-colors ${view === 'my_share' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
-          >
-            My share
-          </button>
+        <div className="flex items-center gap-2">
+          <div className="flex bg-slate-100 rounded-lg p-0.5 text-xs gap-0.5">
+            {['line', 'bar'].map((t) => (
+              <button key={t} onClick={() => setChartType(t)}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${chartType === t ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+                {t === 'line' ? 'Line' : 'Bar'}
+              </button>
+            ))}
+          </div>
+          <div className="flex bg-slate-100 rounded-lg p-0.5 text-xs gap-0.5">
+            <button onClick={() => setView('total')}
+              className={`px-3 py-1 rounded-md font-medium transition-colors ${view === 'total' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+              Group total
+            </button>
+            <button onClick={() => setView('my_share')}
+              className={`px-3 py-1 rounded-md font-medium transition-colors ${view === 'my_share' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+              My share
+            </button>
+          </div>
         </div>
       </div>
-      <BarChart data={data} view={view} color={view === 'total' ? colors[0] : colors[1]} />
+      {chartType === 'line'
+        ? <LineChart data={data} view={view} color={color} />
+        : <BarChart data={data} view={view} color={color} />}
     </div>
   )
 }
