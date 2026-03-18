@@ -29,6 +29,7 @@ export default function GroupDetailPage() {
   const [copiedIdx, setCopiedIdx] = useState(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [qrModal, setQrModal] = useState(null) // { username, userId, dataUrl, amount }
+  const [spendingView, setSpendingView] = useState('weekly')
 
   const load = async () => {
     try {
@@ -198,12 +199,39 @@ export default function GroupDetailPage() {
   const startOfMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
   const nonSettlements = expenses.filter((e) => !e.is_settlement)
-  const weekTotal = nonSettlements
-    .filter((e) => getExpenseDate(e) >= startOfWeekStr)
-    .reduce((sum, e) => sum + e.amount, 0)
-  const monthTotal = nonSettlements
-    .filter((e) => getExpenseDate(e) >= startOfMonthStr)
-    .reduce((sum, e) => sum + e.amount, 0)
+
+  const weeklySpending = Array.from({ length: 5 }, (_, i) => {
+    const weeksBack = 4 - i
+    const wStart = new Date(now)
+    wStart.setDate(now.getDate() - daysToMonday - weeksBack * 7)
+    const wStartStr = toLocalDateStr(wStart)
+    const wEnd = new Date(wStart)
+    wEnd.setDate(wStart.getDate() + 6)
+    const wEndStr = toLocalDateStr(wEnd)
+    return {
+      label: weeksBack === 0 ? 'This week' : wStart.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }),
+      total: nonSettlements
+        .filter((e) => { const d = getExpenseDate(e); return d >= wStartStr && d <= wEndStr })
+        .reduce((sum, e) => sum + e.amount, 0),
+      current: weeksBack === 0,
+    }
+  })
+
+  const monthlySpending = Array.from({ length: 4 }, (_, i) => {
+    const monthsBack = 3 - i
+    const m = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1)
+    const mStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`
+    return {
+      label: monthsBack === 0 ? 'This month' : m.toLocaleDateString('en-PH', { month: 'short' }),
+      total: nonSettlements
+        .filter((e) => getExpenseDate(e).startsWith(mStr))
+        .reduce((sum, e) => sum + e.amount, 0),
+      current: monthsBack === 0,
+    }
+  })
+
+  const spendingData = spendingView === 'weekly' ? weeklySpending : monthlySpending
+  const spendingMax = Math.max(...spendingData.map((d) => d.total), 1)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -329,14 +357,38 @@ export default function GroupDetailPage() {
         {tab === 'expenses' && (
           <div className="space-y-3">
             {nonSettlements.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-xl border border-slate-200 p-3">
-                  <p className="text-xs text-slate-400 font-medium">This week</p>
-                  <p className="text-lg font-bold text-slate-800 mt-0.5">{formatMoney(weekTotal, cur)}</p>
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Spending</p>
+                    <p className="text-xs text-slate-400">{formatMoney(spendingData.at(-1).total, cur)} {spendingView === 'weekly' ? 'this week' : 'this month'}</p>
+                  </div>
+                  <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
+                    {['weekly', 'monthly'].map((v) => (
+                      <button key={v} onClick={() => setSpendingView(v)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${spendingView === v ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                        {v === 'weekly' ? 'Weekly' : 'Monthly'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="bg-white rounded-xl border border-slate-200 p-3">
-                  <p className="text-xs text-slate-400 font-medium">This month</p>
-                  <p className="text-lg font-bold text-slate-800 mt-0.5">{formatMoney(monthTotal, cur)}</p>
+                <div className="flex items-end gap-1.5 h-16">
+                  {spendingData.map((d, i) => (
+                    <div key={i} className="flex-1 flex items-end justify-center">
+                      <div
+                        className={`w-full rounded-t-sm transition-all ${d.current ? 'bg-indigo-500' : 'bg-indigo-200'}`}
+                        style={{ height: `${Math.max((d.total / spendingMax) * 56, d.total > 0 ? 3 : 0)}px` }}
+                        title={formatMoney(d.total, cur)}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-1.5 mt-1">
+                  {spendingData.map((d, i) => (
+                    <div key={i} className="flex-1 text-center">
+                      <p className="text-slate-400 truncate" style={{ fontSize: '9px' }}>{d.label}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
