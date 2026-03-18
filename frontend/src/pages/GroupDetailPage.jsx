@@ -180,18 +180,29 @@ export default function GroupDetailPage() {
   const cur = group.default_currency || 'PHP'
 
   const now = new Date()
+
+  // Local YYYY-MM-DD string helpers (avoids UTC vs local timezone issues)
+  const toLocalDateStr = (d) =>
+    new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+
+  const getExpenseDate = (e) => {
+    if (e.transaction_date) return String(e.transaction_date).slice(0, 10)
+    if (e.created_at) return toLocalDateStr(new Date(e.created_at))
+    return '1970-01-01'
+  }
+
   const daysToMonday = now.getDay() === 0 ? 6 : now.getDay() - 1
-  const startOfWeek = new Date(now)
-  startOfWeek.setDate(now.getDate() - daysToMonday)
-  startOfWeek.setHours(0, 0, 0, 0)
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfWeekDate = new Date(now)
+  startOfWeekDate.setDate(now.getDate() - daysToMonday)
+  const startOfWeekStr = toLocalDateStr(startOfWeekDate)
+  const startOfMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
   const nonSettlements = expenses.filter((e) => !e.is_settlement)
   const weekTotal = nonSettlements
-    .filter((e) => new Date(e.transaction_date || e.created_at) >= startOfWeek)
+    .filter((e) => getExpenseDate(e) >= startOfWeekStr)
     .reduce((sum, e) => sum + e.amount, 0)
   const monthTotal = nonSettlements
-    .filter((e) => new Date(e.transaction_date || e.created_at) >= startOfMonth)
+    .filter((e) => getExpenseDate(e) >= startOfMonthStr)
     .reduce((sum, e) => sum + e.amount, 0)
 
   return (
